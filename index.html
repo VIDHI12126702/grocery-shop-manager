@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grocery Shop Manager</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f0f4f0; }
+
+    .heading-font { font-family: 'Playfair Display', serif; }
+    .fade-in { animation: fadeIn 0.35s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tab-btn { transition: all 0.25s; }
+    .tab-btn.active {
+      border-bottom: 3px solid #1a5c2a;
+      color: #1a5c2a;
+      font-weight: 700;
+      background: #f7faf7;
+    }
+
+    .stock-add { background: #e8f5e9; border-left: 4px solid #2e7d32; }
+    .stock-sell { background: #fff3e0; border-left: 4px solid #e65100; }
+
+    .btn-primary { background: #1a5c2a; color: white; transition: 0.2s; }
+    .btn-primary:hover { background: #145222; }
+    .btn-sell { background: #bf360c; color: white; transition: 0.2s; }
+    .btn-sell:hover { background: #9a2c0a; }
+
+    .summary-card { background: linear-gradient(135deg, #1a5c2a 0%, #2e7d32 100%); }
+    .summary-sell { background: linear-gradient(135deg, #bf360c 0%, #e65100 100%); }
+    .summary-net { background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%); }
+
+    input, select {
+      border: 2px solid #d1d5db;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 15px;
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #1a5c2a;
+      box-shadow: 0 0 0 3px rgba(26,92,42,0.15);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 20px;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      z-index: 9999;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      animation: toastIn 0.25s ease-out;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    ::-webkit-scrollbar { width: 7px; }
+    ::-webkit-scrollbar-thumb { background: #9ccc9c; border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <div id="login-screen" class="min-h-screen flex items-center justify-center px-4" style="background: linear-gradient(160deg, #0d3b1a 0%, #1a5c2a 45%, #2e7d32 100%);">
+    <div class="fade-in text-center p-8 max-w-md w-full">
+      <div class="text-6xl mb-6">🛒</div>
+      <h1 class="heading-font text-4xl text-white mb-3">Grocery Shop Manager</h1>
+      <p class="text-green-200 mb-8 text-lg">Admin Login</p>
+
+      <button onclick="showCredentials()" class="btn-primary w-full py-3 rounded-xl text-lg font-bold shadow-lg">
+        🔐 Admin Login
+      </button>
+    </div>
+  </div>
+
+  <div id="credentials-screen" class="min-h-screen flex items-center justify-center px-4" style="background: linear-gradient(160deg, #0d3b1a 0%, #1a5c2a 45%, #2e7d32 100%); display:none;">
+    <div class="fade-in text-center p-8 max-w-md w-full">
+      <div class="text-6xl mb-6">🛒</div>
+      <h1 class="heading-font text-4xl text-white mb-2">🔐 Admin Login</h1>
+      <p class="text-green-200 mb-8 text-sm">Enter admin credentials</p>
+
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-green-100 text-sm mb-2 text-left font-medium">Admin ID</label>
+          <input type="text" id="admin-id" placeholder="Enter admin ID" required />
+        </div>
+
+        <div>
+          <label class="block text-green-100 text-sm mb-2 text-left font-medium">Password</label>
+          <input type="password" id="admin-password" placeholder="Enter password" required />
+        </div>
+
+        <button type="submit" class="btn-primary w-full py-3 rounded-xl text-lg font-bold shadow-lg">
+          Login →
+        </button>
+      </form>
+
+      <button onclick="showLoginScreen()" class="text-green-300 hover:text-white transition text-sm mt-4">
+        ← Back
+      </button>
+    </div>
+  </div>
+
+  <div id="main-app" style="display:none;">
+    <header class="w-full px-4 py-4" style="background: linear-gradient(135deg, #0d3b1a, #1a5c2a);">
+      <div class="max-w-5xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">🛒</span>
+          <div>
+            <h1 class="heading-font text-xl text-white">Grocery Shop Manager</h1>
+            <p class="text-green-200 text-xs" id="owner-display">Main Admin (🔐 Admin)</p>
+          </div>
+        </div>
+
+        <button onclick="logoutUser()" class="text-green-200 hover:text-white transition text-sm flex items-center gap-1">
+          <i data-lucide="log-out" style="width:16px;height:16px;"></i> Exit
+        </button>
+      </div>
+    </header>
+
+    <nav class="w-full bg-white border-b shadow-sm sticky top-0 z-50">
+      <div class="max-w-5xl mx-auto flex">
+        <button class="tab-btn active flex-1 py-3 text-center text-sm" data-tab="add" onclick="switchTab('add')">
+          <span class="block text-lg mb-0.5">📦</span> Add Stock
+        </button>
+        <button class="tab-btn flex-1 py-3 text-center text-sm" data-tab="sell" onclick="switchTab('sell')">
+          <span class="block text-lg mb-0.5">🛍️</span> Sell
+        </button>
+        <button class="tab-btn flex-1 py-3 text-center text-sm" data-tab="history" onclick="switchTab('history')">
+          <span class="block text-lg mb-0.5">📋</span> History
+        </button>
+        <button class="tab-btn flex-1 py-3 text-center text-sm" data-tab="summary" onclick="switchTab('summary')">
+          <span class="block text-lg mb-0.5">📊</span> Summary
+        </button>
+      </div>
+    </nav>
+
+    <div class="max-w-5xl mx-auto p-4 pb-20">
+      <div id="tab-add" class="tab-content fade-in">
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+          <h2 class="heading-font text-xl mb-1" style="color:#1a5c2a;">📦 Add Stock to Store</h2>
+          <p class="text-gray-400 text-sm mb-5">When new products arrive, record them here</p>
+
+          <form id="add-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+              <input type="text" id="add-product" placeholder="e.g. Rice, Sugar, Oil..." required />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                <input type="number" id="add-qty" placeholder="e.g. 10" min="1" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                <select id="add-unit">
+                  <option value="pieces">Pieces</option>
+                  <option value="kg">Kg</option>
+                  <option value="bags">Bags</option>
+                  <option value="boxes">Boxes</option>
+                  <option value="bottles">Bottles</option>
+                  <option value="liters">Liters</option>
+                  <option value="cans">Cans</option>
+                  <option value="packages">Packages</option>
+                  <option value="dozen">Dozen</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Note (optional)</label>
+              <input type="text" id="add-note" placeholder="e.g. Supplier delivery" />
+            </div>
+
+            <button type="submit" id="add-btn" class="btn-primary w-full py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2">
+              <i data-lucide="plus-circle" style="width:20px;height:20px;"></i> Add to Store
+            </button>
+          </form>
+        </div>
+
+        <div id="recent-adds" class="space-y-2"></div>
+      </div>
+
+      <div id="tab-sell" class="tab-content fade-in" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+          <h2 class="heading-font text-xl mb-1" style="color:#bf360c;">🛍️ Record a Sale</h2>
+          <p class="text-gray-400 text-sm mb-5">When you sell products to customers, record them here</p>
+
+          <form id="sell-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+              <input type="text" id="sell-product" placeholder="e.g. Rice, Milk..." required />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Quantity Sold</label>
+                <input type="number" id="sell-qty" placeholder="e.g. 4" min="1" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                <select id="sell-unit">
+                  <option value="pieces">Pieces</option>
+                  <option value="kg">Kg</option>
+                  <option value="bags">Bags</option>
+                  <option value="boxes">Boxes</option>
+                  <option value="bottles">Bottles</option>
+                  <option value="liters">Liters</option>
+                  <option value="cans">Cans</option>
+                  <option value="packages">Packages</option>
+                  <option value="dozen">Dozen</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Customer Note (optional)</label>
+              <input type="text" id="sell-note" placeholder="e.g. Customer name" />
+            </div>
+
+            <button type="submit" id="sell-btn" class="btn-sell w-full py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2">
+              <i data-lucide="shopping-bag" style="width:20px;height:20px;"></i> Record Sale
+            </button>
+          </form>
+        </div>
+
+        <div id="recent-sells" class="space-y-2"></div>
+      </div>
+
+      <div id="tab-history" class="tab-content fade-in" style="display:none;">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="heading-font text-xl" style="color:#1a5c2a;">📋 All Entries</h2>
+          <div class="flex gap-2">
+            <button onclick="filterHistory('all')" class="filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-800 text-white font-medium" data-filter="all">All</button>
+            <button onclick="filterHistory('stock_in')" class="filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 font-medium" data-filter="stock_in">📦 Added</button>
+            <button onclick="filterHistory('sold')" class="filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 font-medium" data-filter="sold">🛍️ Sold</button>
+          </div>
+        </div>
+
+        <div id="history-list" class="space-y-2"></div>
+
+        <div id="history-empty" class="text-center py-16 text-gray-400" style="display:none;">
+          <div class="text-5xl mb-3">📭</div>
+          <p class="font-medium">No entries yet</p>
+          <p class="text-sm">Start by adding stock or recording sales</p>
+        </div>
+      </div>
+
+      <div id="tab-summary" class="tab-content fade-in" style="display:none;">
+        <h2 class="heading-font text-xl mb-4" style="color:#1a5c2a;">📊 Stock Summary</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          <div class="summary-card rounded-2xl p-5 text-white">
+            <p class="text-green-100 text-xs font-medium mb-1">📦 Total Added</p>
+            <p class="text-3xl font-bold" id="total-added">0</p>
+            <p class="text-green-200 text-xs">items received</p>
+          </div>
+
+          <div class="summary-sell rounded-2xl p-5 text-white">
+            <p class="text-orange-100 text-xs font-medium mb-1">🛍️ Total Sold</p>
+            <p class="text-3xl font-bold" id="total-sold">0</p>
+            <p class="text-orange-200 text-xs">items sold</p>
+          </div>
+
+          <div class="summary-net rounded-2xl p-5 text-white">
+            <p class="text-blue-100 text-xs font-medium mb-1">📊 Net Stock</p>
+            <p class="text-3xl font-bold" id="total-net">0</p>
+            <p class="text-blue-200 text-xs">added − sold</p>
+          </div>
+        </div>
+
+        <h3 class="font-bold text-gray-700 mb-3">Product Breakdown</h3>
+        <div id="product-breakdown" class="space-y-2"></div>
+
+        <div id="breakdown-empty" class="text-center py-12 text-gray-400" style="display:none;">
+          <div class="text-4xl mb-2">📊</div>
+          <p class="text-sm">Add some entries to see breakdown</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    const ADMIN_ID = "ADMIN";
+    const ADMIN_PASSWORD = "admin123";
+
+    let currentFilter = "all";
+    let deleteConfirmId = null;
+
+    function getEntries() {
+      try {
+        return JSON.parse(localStorage.getItem("grocery_entries") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveEntries(entries) {
+      localStorage.setItem("grocery_entries", JSON.stringify(entries));
+    }
+
+    function isLoggedIn() {
+      return localStorage.getItem("grocery_logged_in") === "true";
+    }
+
+    function setLoggedIn(value) {
+      localStorage.setItem("grocery_logged_in", value ? "true" : "false");
+    }
+
+    function escHtml(s) {
+      const d = document.createElement("div");
+      d.textContent = s || "";
+      return d.innerHTML;
+    }
+
+    function showToast(msg, color) {
+      const t = document.createElement("div");
+      t.className = "toast";
+      t.style.background = color;
+      t.textContent = msg;
+      document.getElementById("toast-container").appendChild(t);
+      setTimeout(() => t.remove(), 2500);
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function showLoginScreen() {
+      document.getElementById("login-screen").style.display = "flex";
+      document.getElementById("credentials-screen").style.display = "none";
+      document.getElementById("main-app").style.display = "none";
+    }
+
+    function showCredentials() {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("credentials-screen").style.display = "flex";
+      document.getElementById("main-app").style.display = "none";
+    }
+
+    function showMain() {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("credentials-screen").style.display = "none";
+      document.getElementById("main-app").style.display = "block";
+      switchTab("add");
+      renderAll();
+      lucide.createIcons();
+    }
+
+    function logoutUser() {
+      setLoggedIn(false);
+      document.getElementById("login-form").reset();
+      showLoginScreen();
+    }
+
+    document.getElementById("login-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const id = document.getElementById("admin-id").value.trim().toUpperCase();
+      const password = document.getElementById("admin-password").value.trim();
+
+      if (id === ADMIN_ID && password === ADMIN_PASSWORD) {
+        setLoggedIn(true);
+        document.getElementById("login-form").reset();
+        showMain();
+        showToast("✅ Login successful", "#2e7d32");
+      } else {
+        showToast("❌ Wrong admin ID or password", "#dc2626");
+      }
+    });
+
+    function switchTab(tab) {
+      document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
+      document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+      document.getElementById("tab-" + tab).style.display = "block";
+      document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
+    }
+
+    document.getElementById("add-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const product = document.getElementById("add-product").value.trim();
+      const qty = parseInt(document.getElementById("add-qty").value, 10);
+      const unit = document.getElementById("add-unit").value;
+      const note = document.getElementById("add-note").value.trim();
+
+      if (!product || !qty || qty <= 0) {
+        showToast("❌ Enter valid product and quantity", "#dc2626");
+        return;
+      }
+
+      const entries = getEntries();
+      entries.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        type: "stock_in",
+        product_name: product,
+        quantity: qty,
+        unit: unit,
+        note: note,
+        created_at: new Date().toISOString()
+      });
+
+      saveEntries(entries);
+      document.getElementById("add-form").reset();
+      renderAll();
+      lucide.createIcons();
+      showToast("✅ Stock added!", "#2e7d32");
+    });
+
+    document.getElementById("sell-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const product = document.getElementById("sell-product").value.trim();
+      const qty = parseInt(document.getElementById("sell-qty").value, 10);
+      const unit = document.getElementById("sell-unit").value;
+      const note = document.getElementById("sell-note").value.trim();
+
+      if (!product || !qty || qty <= 0) {
+        showToast("❌ Enter valid product and quantity", "#dc2626");
+        return;
+      }
+
+      const entries = getEntries();
+      entries.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        type: "sold",
+        product_name: product,
+        quantity: qty,
+        unit: unit,
+        note: note,
+        created_at: new Date().toISOString()
+      });
+
+      saveEntries(entries);
+      document.getElementById("sell-form").reset();
+      renderAll();
+      lucide.createIcons();
+      showToast("🛍️ Sale recorded!", "#e65100");
+    });
+
+    function renderRecentAdds() {
+      const container = document.getElementById("recent-adds");
+      const adds = getEntries()
+        .filter(d => d.type === "stock_in")
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 3);
+
+      if (adds.length === 0) {
+        container.innerHTML = "";
+        return;
+      }
+
+      container.innerHTML =
+        '<p class="text-xs font-medium text-gray-400 mb-1">Recent additions</p>' +
+        adds.map(d => `
+          <div class="stock-add rounded-xl p-3">
+            <div class="flex justify-between items-center">
+              <span class="font-medium text-sm">${escHtml(d.product_name)}</span>
+              <span class="text-green-800 font-bold text-sm">+${d.quantity} ${d.unit}</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">${formatDate(d.created_at)}${d.note ? " · " + escHtml(d.note) : ""}</p>
+          </div>
+        `).join("");
+    }
+
+    function renderRecentSells() {
+      const container = document.getElementById("recent-sells");
+      const sells = getEntries()
+        .filter(d => d.type === "sold")
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 3);
+
+      if (sells.length === 0) {
+        container.innerHTML = "";
+        return;
+      }
+
+      container.innerHTML =
+        '<p class="text-xs font-medium text-gray-400 mb-1">Recent sales</p>' +
+        sells.map(d => `
+          <div class="stock-sell rounded-xl p-3">
+            <div class="flex justify-between items-center">
+              <span class="font-medium text-sm">${escHtml(d.product_name)}</span>
+              <span class="text-orange-800 font-bold text-sm">−${d.quantity} ${d.unit}</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">${formatDate(d.created_at)}${d.note ? " · " + escHtml(d.note) : ""}</p>
+          </div>
+        `).join("");
+    }
+
+    function renderHistory() {
+      const container = document.getElementById("history-list");
+      const empty = document.getElementById("history-empty");
+
+      let filtered = [...getEntries()];
+      if (currentFilter !== "all") {
+        filtered = filtered.filter(d => d.type === currentFilter);
+      }
+
+      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      if (filtered.length === 0) {
+        container.innerHTML = "";
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+
+      container.innerHTML = filtered.map(d => {
+        const isAdd = d.type === "stock_in";
+        const cls = isAdd ? "stock-add" : "stock-sell";
+        const icon = isAdd ? "📦" : "🛍️";
+        const sign = isAdd ? "+" : "−";
+        const clr = isAdd ? "text-green-800" : "text-orange-800";
+
+        if (deleteConfirmId === d.id) {
+          return `
+            <div class="bg-red-50 border-2 border-red-200 rounded-xl p-3">
+              <p class="text-sm font-medium text-red-700 mb-2">Delete "${escHtml(d.product_name)}"?</p>
+              <div class="flex gap-2">
+                <button onclick="confirmDelete('${d.id}')" class="bg-red-600 text-white text-xs px-4 py-2 rounded-lg font-medium">Yes, Delete</button>
+                <button onclick="cancelDelete()" class="bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-medium">Cancel</button>
+              </div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="${cls} rounded-xl p-3">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <span class="font-medium text-sm">${icon} ${escHtml(d.product_name)}</span>
+                <span class="${clr} font-bold text-sm ml-2">${sign}${d.quantity} ${d.unit}</span>
+                <p class="text-xs text-gray-500 mt-0.5">${formatDate(d.created_at)}${d.note ? " · " + escHtml(d.note) : ""}</p>
+              </div>
+              <button onclick="requestDelete('${d.id}')" class="text-gray-400 hover:text-red-500 transition ml-2 mt-0.5" title="Delete">
+                <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      lucide.createIcons();
+    }
+
+    function requestDelete(id) {
+      deleteConfirmId = id;
+      renderHistory();
+    }
+
+    function cancelDelete() {
+      deleteConfirmId = null;
+      renderHistory();
+    }
+
+    function confirmDelete(id) {
+      const entries = getEntries().filter(item => item.id !== id);
+      saveEntries(entries);
+      deleteConfirmId = null;
+      renderAll();
+      showToast("🗑️ Entry deleted", "#6b7280");
+    }
+
+    function filterHistory(f) {
+      currentFilter = f;
+      document.querySelectorAll(".filter-btn").forEach(btn => {
+        if (btn.dataset.filter === f) {
+          btn.className = "filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-800 text-white font-medium";
+        } else {
+          btn.className = "filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 font-medium";
+        }
+      });
+      renderHistory();
+    }
+
+    function renderSummary() {
+      const entries = getEntries();
+      let totalAdded = 0;
+      let totalSold = 0;
+      const products = {};
+
+      entries.forEach(d => {
+        const key = (d.product_name || "").toLowerCase().trim();
+        if (!key) return;
+
+        if (!products[key]) {
+          products[key] = {
+            name: d.product_name,
+            added: 0,
+            sold: 0,
+            unit: d.unit
+          };
+        }
+
+        if (d.type === "stock_in") {
+          products[key].added += d.quantity;
+          totalAdded += d.quantity;
+        } else {
+          products[key].sold += d.quantity;
+          totalSold += d.quantity;
+        }
+      });
+
+      document.getElementById("total-added").textContent = totalAdded;
+      document.getElementById("total-sold").textContent = totalSold;
+      document.getElementById("total-net").textContent = totalAdded - totalSold;
+
+      const breakdown = document.getElementById("product-breakdown");
+      const empty = document.getElementById("breakdown-empty");
+      const keys = Object.keys(products);
+
+      if (keys.length === 0) {
+        breakdown.innerHTML = "";
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+
+      breakdown.innerHTML = keys.sort().map(k => {
+        const p = products[k];
+        const net = p.added - p.sold;
+
+        const netCls =
+          net > 0 ? "text-green-700 bg-green-50 border-l-4 border-green-500" :
+          net < 0 ? "text-red-700 bg-red-50 border-l-4 border-red-500" :
+          "text-gray-600 bg-gray-50 border-l-4 border-gray-300";
+
+        const stockStatus =
+          net > 0 ? "✅ In Stock" :
+          net < 0 ? "⚠️ Over Sold" :
+          "⚪ Out of Stock";
+
+        return `
+          <div class="bg-white rounded-xl p-4 shadow-sm ${netCls}">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex-1">
+                <span class="font-bold text-base block mb-0.5">${escHtml(p.name)}</span>
+                <span class="text-xs font-medium opacity-70">${p.unit}</span>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold">${net >= 0 ? "+" : ""}${net}</div>
+                <div class="text-xs font-bold mt-0.5">${stockStatus}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 text-xs mt-3 pt-3 border-t border-current border-opacity-20">
+              <div class="text-center">
+                <span class="text-2xl block mb-1">📦</span>
+                <div class="font-bold text-green-700 text-base">${p.added}</div>
+                <div class="opacity-70 text-xs">Added</div>
+              </div>
+              <div class="text-center">
+                <span class="text-2xl block mb-1">🛍️</span>
+                <div class="font-bold text-orange-700 text-base">${p.sold}</div>
+                <div class="opacity-70 text-xs">Sold</div>
+              </div>
+              <div class="text-center">
+                <span class="text-2xl block mb-1">📊</span>
+                <div class="font-bold text-base">${net}</div>
+                <div class="opacity-70 text-xs">Left</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderAll() {
+      renderRecentAdds();
+      renderRecentSells();
+      renderHistory();
+      renderSummary();
+      lucide.createIcons();
+    }
+
+    window.onload = function() {
+      if (isLoggedIn()) {
+        showMain();
+      } else {
+        showLoginScreen();
+      }
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
