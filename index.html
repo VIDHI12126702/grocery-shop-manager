@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Grocery Shop Manager - Updated</title>
+  <title>Grocery Shop Manager</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -150,7 +150,6 @@
     <div class="fade-in text-center p-8 max-w-md w-full">
       <div class="text-6xl mb-6">🛒</div>
       <h1 class="heading-font text-4xl text-white mb-3">Grocery Shop Manager</h1>
-      <p class="text-green-200 mb-8 text-lg">Updated Inventory Edition</p>
       <button onclick="showCredentials()" class="btn-primary w-full py-3 rounded-xl text-lg font-bold shadow-lg">
         🔐 Admin Login
       </button>
@@ -192,7 +191,6 @@
           <span class="text-3xl">🛒</span>
           <div>
             <h1 class="heading-font text-xl text-white">Grocery Shop Manager</h1>
-            <p class="text-green-200 text-xs">Namaste India catalog loaded • 308 items</p>
           </div>
         </div>
 
@@ -228,9 +226,8 @@
           <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
             <div>
               <h2 class="heading-font text-xl mb-1" style="color:#1a5c2a;">📦 Add Stock to Store</h2>
-              <p class="text-gray-400 text-sm">Select from the full PDF inventory and record new stock.</p>
+              <p class="text-gray-400 text-sm">Select from the inventory and record new stock.</p>
             </div>
-            <span class="badge bg-green-100 text-green-800">308 PDF items loaded</span>
           </div>
 
           <form id="add-form" class="space-y-4">
@@ -242,7 +239,7 @@
                   Search
                 </button>
               </div>
-              <p class="text-xs text-gray-400 mt-1">Type product name or press Search to find from 308 items.</p>
+              <p class="text-xs text-gray-400 mt-1">Type product name or press Search to find </p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -299,7 +296,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
               <div class="flex gap-2">
-                <input type="text" id="sell-product" list="catalog-options" placeholder="Search product name from PDF list..." required />
+                <input type="text" id="sell-product" list="catalog-options" placeholder="" required />
                 <button type="button" class="btn-sell px-4 rounded-xl font-bold text-sm search-action-btn" onclick="openProductPicker('sell')">
                   Search
                 </button>
@@ -352,7 +349,7 @@
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
               <h2 class="heading-font text-xl mb-1" style="color:#1565c0;">🏷️ Full Product Catalog</h2>
-              <p class="text-gray-400 text-sm">All items imported from your PDF inventory.</p>
+              <p class="text-gray-400 text-sm">All items imported from your inventory.</p>
             </div>
             <span class="badge bg-blue-100 text-blue-800"><span id="catalog-count">308</span> items</span>
           </div>
@@ -412,7 +409,6 @@
           <div class="summary-catalog rounded-2xl p-5 text-white">
             <p class="text-violet-100 text-xs font-medium mb-1">🏷️ Catalog Items</p>
             <p class="text-3xl font-bold">308</p>
-            <p class="text-violet-200 text-xs">from PDF inventory</p>
           </div>
         </div>
 
