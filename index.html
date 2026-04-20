@@ -1,3 +1,1210 @@
+<<<<<<< HEAD
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grocery Shop Manager - Updated</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: #f0f4f0; color: #1f2937; }
+
+    .heading-font { font-family: 'Playfair Display', serif; }
+    .fade-in { animation: fadeIn 0.35s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tab-btn { transition: all 0.25s; }
+    .tab-btn.active {
+      border-bottom: 3px solid #1a5c2a;
+      color: #1a5c2a;
+      font-weight: 700;
+      background: #f7faf7;
+    }
+
+    .stock-add { background: #e8f5e9; border-left: 4px solid #2e7d32; }
+    .stock-sell { background: #fff3e0; border-left: 4px solid #e65100; }
+    .stock-alert { background: #fff5f5; border-left: 4px solid #dc2626; }
+
+    .btn-primary { background: #1a5c2a; color: white; transition: 0.2s; }
+    .btn-primary:hover { background: #145222; }
+    .btn-sell { background: #bf360c; color: white; transition: 0.2s; }
+    .btn-sell:hover { background: #9a2c0a; }
+    .btn-info { background: #1565c0; color: white; transition: 0.2s; }
+    .btn-info:hover { background: #0f4fa0; }
+
+    .summary-card { background: linear-gradient(135deg, #1a5c2a 0%, #2e7d32 100%); }
+    .summary-sell { background: linear-gradient(135deg, #bf360c 0%, #e65100 100%); }
+    .summary-net { background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%); }
+    .summary-catalog { background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%); }
+
+    input, select {
+      border: 2px solid #d1d5db;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 15px;
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: white;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #1a5c2a;
+      box-shadow: 0 0 0 3px rgba(26,92,42,0.15);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 20px;
+      border-radius: 12px;
+      color: white;
+      font-weight: 600;
+      z-index: 9999;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      animation: toastIn 0.25s ease-out;
+      max-width: 340px;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-thumb { background: #9ccc9c; border-radius: 10px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .product-picker-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      padding: 16px;
+    }
+
+    .product-picker-modal {
+      background: white;
+      width: min(760px, 100%);
+      max-height: 85vh;
+      border-radius: 24px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.28);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-picker-list {
+      overflow: auto;
+      padding: 12px 16px 16px;
+      max-height: 60vh;
+    }
+
+    .product-picker-item {
+      width: 100%;
+      text-align: left;
+      border: 1px solid #e5e7eb;
+      background: white;
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .product-picker-item:hover {
+      border-color: #1a5c2a;
+      box-shadow: 0 6px 18px rgba(26,92,42,0.1);
+      transform: translateY(-1px);
+    }
+
+    .search-action-btn {
+      min-width: 108px;
+      white-space: nowrap;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="login-screen" class="min-h-screen flex items-center justify-center px-4" style="background: linear-gradient(160deg, #0d3b1a 0%, #1a5c2a 45%, #2e7d32 100%);">
+    <div class="fade-in text-center p-8 max-w-md w-full">
+      <div class="text-6xl mb-6">🛒</div>
+      <h1 class="heading-font text-4xl text-white mb-3">Grocery Shop Manager</h1>
+      <p class="text-green-200 mb-8 text-lg">Updated Inventory Edition</p>
+      <button onclick="showCredentials()" class="btn-primary w-full py-3 rounded-xl text-lg font-bold shadow-lg">
+        🔐 Admin Login
+      </button>
+    </div>
+  </div>
+
+  <div id="credentials-screen" class="min-h-screen flex items-center justify-center px-4" style="background: linear-gradient(160deg, #0d3b1a 0%, #1a5c2a 45%, #2e7d32 100%); display:none;">
+    <div class="fade-in text-center p-8 max-w-md w-full">
+      <div class="text-6xl mb-6">🛒</div>
+      <h1 class="heading-font text-4xl text-white mb-2">🔐 Admin Login</h1>
+      <p class="text-green-200 mb-8 text-sm">Enter admin credentials</p>
+
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-green-100 text-sm mb-2 text-left font-medium">Admin ID</label>
+          <input type="text" id="admin-id" placeholder="Enter admin ID" required />
+        </div>
+
+        <div>
+          <label class="block text-green-100 text-sm mb-2 text-left font-medium">Password</label>
+          <input type="password" id="admin-password" placeholder="Enter password" required />
+        </div>
+
+        <button type="submit" class="btn-primary w-full py-3 rounded-xl text-lg font-bold shadow-lg">
+          Login →
+        </button>
+      </form>
+
+      <button onclick="showLoginScreen()" class="text-green-300 hover:text-white transition text-sm mt-4">
+        ← Back
+      </button>
+    </div>
+  </div>
+
+  <div id="main-app" style="display:none;">
+    <header class="w-full px-4 py-4" style="background: linear-gradient(135deg, #0d3b1a, #1a5c2a);">
+      <div class="max-w-6xl mx-auto flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">🛒</span>
+          <div>
+            <h1 class="heading-font text-xl text-white">Grocery Shop Manager</h1>
+            <p class="text-green-200 text-xs">Namaste India catalog loaded • 308 items</p>
+          </div>
+        </div>
+
+        <button onclick="logoutUser()" class="text-green-200 hover:text-white transition text-sm flex items-center gap-1">
+          <i data-lucide="log-out" style="width:16px;height:16px;"></i> Exit
+        </button>
+      </div>
+    </header>
+
+    <nav class="w-full bg-white border-b shadow-sm sticky top-0 z-50 overflow-x-auto">
+      <div class="max-w-6xl mx-auto flex min-w-max">
+        <button class="tab-btn active flex-1 py-3 px-4 text-center text-sm" data-tab="add" onclick="switchTab('add')">
+          <span class="block text-lg mb-0.5">📦</span> Add Stock
+        </button>
+        <button class="tab-btn flex-1 py-3 px-4 text-center text-sm" data-tab="sell" onclick="switchTab('sell')">
+          <span class="block text-lg mb-0.5">🛍️</span> Sell
+        </button>
+        <button class="tab-btn flex-1 py-3 px-4 text-center text-sm" data-tab="inventory" onclick="switchTab('inventory')">
+          <span class="block text-lg mb-0.5">🏷️</span> Catalog
+        </button>
+        <button class="tab-btn flex-1 py-3 px-4 text-center text-sm" data-tab="history" onclick="switchTab('history')">
+          <span class="block text-lg mb-0.5">📋</span> History
+        </button>
+        <button class="tab-btn flex-1 py-3 px-4 text-center text-sm" data-tab="summary" onclick="switchTab('summary')">
+          <span class="block text-lg mb-0.5">📊</span> Summary
+        </button>
+      </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto p-4 pb-20">
+      <div id="tab-add" class="tab-content fade-in">
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+            <div>
+              <h2 class="heading-font text-xl mb-1" style="color:#1a5c2a;">📦 Add Stock to Store</h2>
+              <p class="text-gray-400 text-sm">Select from the full PDF inventory and record new stock.</p>
+            </div>
+            <span class="badge bg-green-100 text-green-800">308 PDF items loaded</span>
+          </div>
+
+          <form id="add-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+              <div class="flex gap-2">
+                <input type="text" id="add-product" list="catalog-options" placeholder="Search product name from PDF list..." required />
+                <button type="button" class="btn-primary px-4 rounded-xl font-bold text-sm search-action-btn" onclick="openProductPicker('add')">
+                  Search
+                </button>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">Type product name or press Search to find from 308 items.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                <input type="number" id="add-qty" placeholder="e.g. 10" min="1" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                <select id="add-unit">
+                  <option value="pieces">Pieces</option>
+                  <option value="kg">Kg</option>
+                  <option value="lb">Lb</option>
+                  <option value="g">Gram</option>
+                  <option value="L">Liter</option>
+                  <option value="ml">Ml</option>
+                  <option value="boxes">Boxes</option>
+                  <option value="bottles">Bottles</option>
+                  <option value="packs">Packs</option>
+                  <option value="tubs">Tubs</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Catalog Pack Size</label>
+                <input type="text" id="add-pack-size" placeholder="Auto from product" readonly />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Note (optional)</label>
+              <input type="text" id="add-note" placeholder="e.g. Supplier delivery" />
+            </div>
+
+            <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2">
+              <i data-lucide="plus-circle" style="width:20px;height:20px;"></i> Add to Store
+            </button>
+          </form>
+        </div>
+
+        <div id="recent-adds" class="space-y-2"></div>
+      </div>
+
+      <div id="tab-sell" class="tab-content fade-in" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-6">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-5">
+            <div>
+              <h2 class="heading-font text-xl mb-1" style="color:#bf360c;">🛍️ Record a Sale</h2>
+              <p class="text-gray-400 text-sm">Sell only available items and avoid overselling stock.</p>
+            </div>
+            <span class="badge bg-orange-100 text-orange-800">Stock validation enabled</span>
+          </div>
+
+          <form id="sell-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+              <div class="flex gap-2">
+                <input type="text" id="sell-product" list="catalog-options" placeholder="Search product name from PDF list..." required />
+                <button type="button" class="btn-sell px-4 rounded-xl font-bold text-sm search-action-btn" onclick="openProductPicker('sell')">
+                  Search
+                </button>
+              </div>
+              <p id="sell-stock-hint" class="text-xs text-gray-400 mt-1">Choose an item to see available stock.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Quantity Sold</label>
+                <input type="number" id="sell-qty" placeholder="e.g. 4" min="1" required />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                <select id="sell-unit">
+                  <option value="pieces">Pieces</option>
+                  <option value="kg">Kg</option>
+                  <option value="lb">Lb</option>
+                  <option value="g">Gram</option>
+                  <option value="L">Liter</option>
+                  <option value="ml">Ml</option>
+                  <option value="boxes">Boxes</option>
+                  <option value="bottles">Bottles</option>
+                  <option value="packs">Packs</option>
+                  <option value="tubs">Tubs</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Catalog Pack Size</label>
+                <input type="text" id="sell-pack-size" placeholder="Auto from product" readonly />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Customer Note (optional)</label>
+              <input type="text" id="sell-note" placeholder="e.g. Customer name" />
+            </div>
+
+            <button type="submit" class="btn-sell w-full py-3 rounded-xl font-bold text-base flex items-center justify-center gap-2">
+              <i data-lucide="shopping-bag" style="width:20px;height:20px;"></i> Record Sale
+            </button>
+          </form>
+        </div>
+
+        <div id="recent-sells" class="space-y-2"></div>
+      </div>
+
+      <div id="tab-inventory" class="tab-content fade-in" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-md p-6 mb-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 class="heading-font text-xl mb-1" style="color:#1565c0;">🏷️ Full Product Catalog</h2>
+              <p class="text-gray-400 text-sm">All items imported from your PDF inventory.</p>
+            </div>
+            <span class="badge bg-blue-100 text-blue-800"><span id="catalog-count">308</span> items</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <input type="text" id="catalog-search" placeholder="Search any product..." />
+            <select id="catalog-sort">
+              <option value="az">Sort: A to Z</option>
+              <option value="za">Sort: Z to A</option>
+            </select>
+          </div>
+        </div>
+        <div id="catalog-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      </div>
+
+      <div id="tab-history" class="tab-content fade-in" style="display:none;">
+        <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <h2 class="heading-font text-xl" style="color:#1a5c2a;">📋 All Entries</h2>
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="filterHistory('all')" class="filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-800 text-white font-medium" data-filter="all">All</button>
+            <button onclick="filterHistory('stock_in')" class="filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 font-medium" data-filter="stock_in">📦 Added</button>
+            <button onclick="filterHistory('sold')" class="filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 font-medium" data-filter="sold">🛍️ Sold</button>
+          </div>
+        </div>
+
+        <div id="history-list" class="space-y-2"></div>
+
+        <div id="history-empty" class="text-center py-16 text-gray-400" style="display:none;">
+          <div class="text-5xl mb-3">📭</div>
+          <p class="font-medium">No entries yet</p>
+          <p class="text-sm">Start by adding stock or recording sales</p>
+        </div>
+      </div>
+
+      <div id="tab-summary" class="tab-content fade-in" style="display:none;">
+        <h2 class="heading-font text-xl mb-4" style="color:#1a5c2a;">📊 Stock Summary</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mb-6">
+          <div class="summary-card rounded-2xl p-5 text-white">
+            <p class="text-green-100 text-xs font-medium mb-1">📦 Total Added</p>
+            <p class="text-3xl font-bold" id="total-added">0</p>
+            <p class="text-green-200 text-xs">units received</p>
+          </div>
+
+          <div class="summary-sell rounded-2xl p-5 text-white">
+            <p class="text-orange-100 text-xs font-medium mb-1">🛍️ Total Sold</p>
+            <p class="text-3xl font-bold" id="total-sold">0</p>
+            <p class="text-orange-200 text-xs">units sold</p>
+          </div>
+
+          <div class="summary-net rounded-2xl p-5 text-white">
+            <p class="text-blue-100 text-xs font-medium mb-1">📊 Net Stock</p>
+            <p class="text-3xl font-bold" id="total-net">0</p>
+            <p class="text-blue-200 text-xs">added − sold</p>
+          </div>
+
+          <div class="summary-catalog rounded-2xl p-5 text-white">
+            <p class="text-violet-100 text-xs font-medium mb-1">🏷️ Catalog Items</p>
+            <p class="text-3xl font-bold">308</p>
+            <p class="text-violet-200 text-xs">from PDF inventory</p>
+          </div>
+        </div>
+
+        <h3 class="font-bold text-gray-700 mb-3">Product Breakdown</h3>
+        <div id="product-breakdown" class="space-y-2"></div>
+
+        <div id="breakdown-empty" class="text-center py-12 text-gray-400" style="display:none;">
+          <div class="text-4xl mb-2">📊</div>
+          <p class="text-sm">Add some entries to see breakdown</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <datalist id="catalog-options"></datalist>
+
+  <div id="product-picker-overlay" class="product-picker-overlay">
+    <div class="product-picker-modal">
+      <div class="p-4 border-b bg-gray-50">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <h3 class="heading-font text-xl" style="color:#1a5c2a;">🔎 Search Product</h3>
+            <p class="text-sm text-gray-500">Find item quickly without scrolling the full list.</p>
+          </div>
+          <button type="button" onclick="closeProductPicker()" class="px-4 py-2 rounded-xl bg-gray-200 text-gray-700 font-medium">Close</button>
+        </div>
+        <input type="text" id="product-picker-search" placeholder="Type product, brand, pack size..." />
+        <p id="product-picker-count" class="text-xs text-gray-500 mt-2"></p>
+      </div>
+      <div id="product-picker-list" class="product-picker-list"></div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    const ADMIN_ID = "ADMIN";
+    const ADMIN_PASSWORD = "admin123";
+
+    const defaultProducts = ["Aashirvaad Whole Wheat Atta - 5 kg", "Aashirvaad Whole Wheat Atta - 10 kg", "Aashirvaad Select Sharbati Atta - 5 kg", "Aashirvaad Select Sharbati Atta - 10 kg", "Aashirvaad Multigrain Atta - 5 kg", "Pillsbury Chakki Fresh Atta - 5 kg", "Pillsbury Chakki Fresh Atta - 10 kg", "Pillsbury Multigrain Atta - 5 kg", "Pillsbury Maida - 2 kg", "24 Mantra Organic Ragi Flour - 1 kg", "24 Mantra Organic Jowar Flour - 1 kg", "24 Mantra Organic Bajra Flour - 1 kg", "Deep Besan - 2 kg", "Deep Besan - 4 lb", "Deep Rice Flour - 2 lb", "Deep Idli Rice - 4 lb", "Deep Sooji Rava - 2 lb", "Deep Poha Thick - 2 lb", "Laxmi Poha Thin - 2 lb", "Laxmi Sabudana - 2 lb", "Laxmi Dalia Cracked Wheat - 2 lb", "Laxmi Rice Flour - 2 lb", "Laxmi Corn Flour - 14 oz", "Royal Basmati Rice - 10 lb", "Royal Basmati Rice - 20 lb", "Royal Brown Basmati Rice - 10 lb", "Daawat Traditional Basmati Rice - 5 kg", "Daawat Traditional Basmati Rice - 10 kg", "Daawat Extra Long Basmati Rice - 5 kg", "India Gate Basmati Rice - 5 kg", "India Gate Basmati Rice - 10 kg", "India Gate Classic Basmati Rice - 10 kg", "India Gate Sona Masoori Rice - 10 kg", "Laxmi Toor Dal - 2 lb", "Laxmi Toor Dal - 4 lb", "Laxmi Kabuli Chana - 4 lb", "Laxmi Kala Chana - 4 lb", "Laxmi Rajma Chitra - 4 lb", "Laxmi Urad Dal Split - 4 lb", "Laxmi Urad Dal Whole - 4 lb", "Laxmi Lobia - 4 lb", "Deep Moong Dal Split - 2 kg", "Deep Moong Whole - 4 lb", "Deep Rajma Red - 2 lb", "Deep Vatana White - 2 lb", "Deep Green Peas Dry - 2 lb", "Swad Chana Dal - 4 lb", "Suraj Masoor Dal - 2 kg", "Suraj Moth Beans - 2 lb", "Everest Turmeric Powder - 200 g", "Everest Red Chili Powder - 200 g", "Everest Kashmiri Chili Powder - 100 g", "Everest Coriander Powder - 200 g", "Everest Garam Masala - 100 g", "Everest Kitchen King Masala - 100 g", "Everest Pav Bhaji Masala - 100 g", "Everest Chaat Masala - 100 g", "Everest Tea Masala - 100 g", "MDH Deggi Mirch - 100 g", "MDH Kitchen King - 100 g", "MDH Garam Masala - 100 g", "MDH Chana Masala - 100 g", "MDH Sambhar Masala - 100 g", "MDH Pav Bhaji Masala - 100 g", "Badshah Pav Bhaji Masala - 100 g", "Badshah Tea Masala - 100 g", "Badshah Biryani Pulav Masala - 100 g", "Badshah Kitchen King Masala - 100 g", "Ramdev Hing - 50 g", "Laxmi Cumin Seeds - 400 g", "Laxmi Mustard Seeds - 400 g", "Laxmi Ajwain - 200 g", "Laxmi Sesame Seeds - 400 g", "Laxmi Fennel Seeds - 400 g", "Laxmi Cloves - 100 g", "Laxmi Cinnamon Sticks - 200 g", "Laxmi Cardamom Green - 100 g", "Deep Black Pepper Whole - 200 g", "Deep Kasuri Methi - 100 g", "Deep Bay Leaves - 100 g", "Fortune Sunflower Oil - 1 L", "Fortune Sunflower Oil - 5 L", "Fortune Canola Oil - 2 L", "Fortune Soyabean Oil - 1 L", "Dhara Mustard Oil - 1 L", "Dhara Mustard Oil - 5 L", "Patanjali Mustard Oil - 1 L", "Patanjali Cow Ghee - 1 L", "Amul Pure Ghee - 500 ml", "Amul Pure Ghee - 1 L", "Deep Sesame Oil - 1 L", "Deep Ginger Garlic Paste - 300 g", "Deep Tamarind Chutney - 300 ml", "Deep Green Chutney - 300 ml", "Maggi Tomato Ketchup - 500 g", "Maggi Tomato Ketchup - 1 kg", "Maggi Hot and Sweet Sauce - 500 g", "Kissan Fresh Tomato Ketchup - 950 g", "Heinz Tomato Ketchup - 1 L", "Ching's Schezwan Sauce - 250 g", "Ching's Green Chilli Sauce - 190 g", "Ching's Soy Sauce - 200 ml", "Patak's Tikka Masala Paste - 283 g", "Dove Beauty Bar Soap - 100 g", "Dove Beauty Bar Soap - 3 Pack", "Dove Deep Moisture Body Wash - 500 ml", "Dove Sensitive Skin Body Wash - 500 ml", "Dove Intense Repair Shampoo - 340 ml", "Dove Intense Repair Shampoo - 650 ml", "Dove Intense Repair Conditioner - 180 ml", "Dove Intense Repair Conditioner - 300 ml", "Lifebuoy Total Soap - 125 g", "Lux Jasmine Soap - 100 g", "Pears Pure Soap - 125 g", "Nivea Fresh Shower Gel - 500 ml", "Nivea Men Active Clean Shower Gel - 500 ml", "Nivea Soft Moisturizing Cream - 200 ml", "Head & Shoulders Anti-Dandruff Shampoo - 340 ml", "Head & Shoulders Anti-Dandruff Shampoo - 650 ml", "Pantene Hair Fall Control Shampoo - 340 ml", "Pantene Hair Fall Control Shampoo - 650 ml", "Pantene Smooth and Silky Conditioner - 180 ml", "Pantene Smooth and Silky Conditioner - 300 ml", "Tresemme Keratin Smooth Shampoo - 340 ml", "Tresemme Keratin Smooth Shampoo - 650 ml", "Tresemme Keratin Smooth Conditioner - 300 ml", "Clinic Plus Strong and Long Shampoo - 340 ml", "Colgate Strong Teeth Toothpaste - 200 g", "Colgate MaxFresh Toothpaste - 150 g", "Sensodyne Repair and Protect Toothpaste - 100 g", "Patanjali Aloe Vera Gel - 150 ml", "Himalaya Aloe Vera Gel - 100 ml", "Pond's Cold Cream - 100 ml", "Vaseline Intensive Care Lotion - 400 ml", "Dettol Antiseptic Liquid - 500 ml", "Dettol Original Soap - 125 g", "Dabur Amla Hair Oil - 300 ml", "Dabur Amla Hair Oil - 500 ml", "Navratna Ayurvedic Cool Hair Oil - 200 ml", "Navratna Ayurvedic Cool Hair Oil - 300 ml", "Bajaj Almond Drops Hair Oil - 300 ml", "Britannia Good Day Butter Cookies - 600 g", "Britannia Good Day Cashew Cookies - 600 g", "Britannia Marie Gold Biscuits - 500 g", "Britannia NutriChoice Digestive - 400 g", "Britannia Rusk - 600 g", "Britannia Cake Rusk - 550 g", "Parle Parle-G Biscuits - 800 g", "Parle Monaco Biscuits - 200 g", "Parle Krackjack Biscuits - 200 g", "Parle Hide and Seek Chocolate - 300 g", "Oreo Chocolate Cream Biscuits - 300 g", "Oreo Vanilla Cream Biscuits - 300 g", "Cadbury Dairy Milk Chocolate - 100 g", "Cadbury Dairy Milk Silk - 150 g", "Cadbury Bournville Dark Chocolate - 80 g", "Nestle KitKat Chocolate - 4 Finger", "Nestle Munch Chocolate - 75 g", "Ferrero Rocher - 200 g Pack", "Bournvita Health Drink - 500 g", "Bournvita Health Drink - 1 kg", "Horlicks Classic Malt - 500 g", "Horlicks Classic Malt - 1 kg", "Boost Energy Drink Powder - 500 g", "Surati Plain Khakhra - 200 g", "Surati Methi Khakhra - 200 g", "Surati Jeera Khakhra - 200 g", "Surati Masala Khakhra - 200 g", "Surati Punjabi Khakhra - 200 g", "Surati Garlic Khakhra - 200 g", "Surati Pizza Khakhra - 200 g", "Surati Butter Khakhra - 200 g", "Surati Chevdo - 400 g", "Surati Tikha Gathiya - 400 g", "Surati Bhavnagri Gathiya - 400 g", "Deep Plain Khakhra - 200 g", "Deep Methi Khakhra - 200 g", "Deep Jeera Khakhra - 200 g", "Deep Masala Khakhra - 200 g", "Deep Mathia Khakhra - 200 g", "Deep Double Methi Khakhra - 200 g", "Deep Nylon Sev - 340 g", "Deep Bhavnagri Gathiya - 340 g", "Deep Tikha Gathiya - 340 g", "Deep Fafda - 340 g", "Deep Papdi - 340 g", "Deep Ganthia - 340 g", "Deep Sev Mamra - 340 g", "Balaji Salted Wafers - 150 g", "Balaji Masala Masti Wafers - 150 g", "Balaji Cream and Onion Wafers - 150 g", "Balaji Tomato Twist Wafers - 150 g", "Balaji Chataka Pataka Wafers - 150 g", "Balaji Cheese Balls - 150 g", "Balaji Banana Wafers - 150 g", "Haldiram's Aloo Bhujia - 200 g", "Haldiram's Aloo Bhujia - 400 g", "Haldiram's Navratan Mix - 400 g", "Haldiram's Khatta Meetha - 400 g", "Haldiram's Moong Dal - 200 g", "Haldiram's Mini Bhakarwadi - 200 g", "Bikaji Bikaneri Bhujia - 200 g", "Bikaji Aloo Bhujia - 200 g", "Bikaji Navratan Mixture - 400 g", "Bikaji Masala Boondi - 200 g", "Haldiram's Gulab Jamun Tin - 1 kg", "Haldiram's Rasgulla Tin - 1 kg", "MTR Gulab Jamun Mix - 200 g", "Gits Gulab Jamun Mix - 200 g", "Deep Cashews - 400 g", "Deep Cashews - 1 kg", "Kirkland Almonds - 1.36 kg", "Kirkland Cashews - 1.13 kg", "Laxmi Raisins Golden - 400 g", "Laxmi Dates Seedless - 500 g", "Laxmi Dry Coconut Powder - 200 g", "Suraj Pistachios - 500 g", "Suraj Flax Seeds - 400 g", "Suraj Chia Seeds - 300 g", "Amul Paneer - 1 kg", "Amul Butter - 500 g", "Amul Cheese Cubes - 200 g", "Amul Fresh Cream - 250 ml", "Amul Sweet Lassi - 1 L", "Amul Mango Lassi - 1 L", "Amul Taaza Milk - 1 L", "Amul Gold Milk - 1 L", "Amul Buttermilk - 1 L", "Amul Chocolate Milk - 200 ml", "Amul Vanilla Ice Cream - 1 L Tub", "Amul Mango Ice Cream - 1 L Tub", "Amul Chocolate Ice Cream - 1 L Tub", "Nanak Paneer - 341 g", "Nanak Paneer - 800 g", "Nanak Dahi Yogurt - 750 g", "Nanak Rasmalai Frozen - 1 kg", "Nanak Rasgulla Frozen - 1 kg", "Nanak Ghee - 1 kg", "Deep Frozen Plain Paratha - 400 g", "Deep Frozen Plain Paratha - 900 g", "Deep Frozen Methi Paratha - 400 g", "Deep Frozen Aloo Paratha - 400 g", "Deep Frozen Undhiyu Mix - 340 g", "Deep Frozen Tindora Cut - 340 g", "Deep Frozen Bhindi Cut - 340 g", "Deep Frozen Lilva - 340 g", "Deep Frozen Khaman - 400 g", "Deep Frozen Patra - 400 g", "Deep Frozen Dhokla - 400 g", "Haldiram's Frozen Punjabi Samosa - 1 kg", "Haldiram's Frozen Veg Samosa - 1 kg", "Haldiram's Frozen Aloo Tikki - 1 kg", "Haldiram's Frozen Kachori - 1 kg", "Tata Tea Premium Tea - 1 kg", "Tata Tea Gold Tea - 500 g", "Tata Tea Masala Chai - 500 g", "Bru Instant Coffee - 200 g", "Bru Gold Coffee - 100 g", "Nescafe Classic Coffee - 200 g", "Nescafe Gold Coffee - 100 g", "Frooti Mango Drink - 1 L", "Maaza Mango Juice - 600 ml", "Rooh Afza Rose Syrup - 750 ml", "Paper Boat Aam Panna - 250 ml", "Paper Boat Jaljeera - 250 ml", "Paper Boat Kokum Drink - 250 ml", "Thums Up Cola - 750 ml", "Thums Up Cola - 2 L", "Limca Lemon Soda - 600 ml", "Limca Lemon Soda - 2 L", "Coca-Cola Soft Drink - 2 L", "Pepsi Soft Drink - 2 L", "Sprite Soft Drink - 2 L", "Fanta Orange Drink - 2 L", "Kwality Walls Cornetto - 120 ml", "Kwality Walls Magnum Ice Cream - 100 ml", "Mother's Recipe Mango Pickle - 500 g", "Mother's Recipe Mango Pickle - 1 kg", "Mother's Recipe Mixed Pickle - 500 g", "Priya Garlic Pickle - 300 g", "Priya Lime Pickle - 300 g", "Priya Tomato Pickle - 300 g", "Patak's Lime Pickle - 283 g", "Patak's Mango Pickle - 283 g", "MTR Rava Idli Mix - 500 g", "MTR Upma Mix - 500 g", "MTR Sambhar Powder - 200 g", "MTR Rasam Powder - 200 g", "Gits Dhokla Mix - 500 g", "Gits Handvo Mix - 500 g", "Gits Khaman Mix - 500 g", "Gits Basundi Mix - 200 g", "Maggi 2-Minute Noodles - 280 g", "Maggi 2-Minute Noodles - 560 g", "Knorr Hot and Sour Soup - 60 g", "Knorr Sweet Corn Soup - 60 g", "Knorr Tomato Soup - 60 g", "Surf Excel Detergent Powder - 2 kg", "Surf Excel Detergent Powder - 4 kg", "Surf Excel Liquid Detergent - 1 L", "Vim Dishwash Liquid - 500 ml", "Vim Dishwash Liquid - 1 L", "Vim Dishwash Bar - 200 g", "Cycle Pure Agarbatti - 100 g", "Cycle Sandal Agarbatti - 100 g", "Mangaldeep Dhoop Sticks - 100 g", "Om Camphor Tablets - 200 g", "Om Cotton Wicks - 100 g"].map((fullName, index) => {
+      const parts = fullName.split(" - ");
+      const packSize = parts.length > 1 ? parts[parts.length - 1] : "";
+      const displayName = parts.length > 1 ? parts.slice(0, -1).join(" - ") : fullName;
+      return {
+        id: index + 1,
+        fullName,
+        displayName,
+        packSize
+      };
+    });
+
+    let currentFilter = "all";
+    let deleteConfirmId = null;
+    let editEntryId = null;
+
+    function getEntries() {
+      try {
+        return JSON.parse(localStorage.getItem("grocery_entries") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveEntries(entries) {
+      localStorage.setItem("grocery_entries", JSON.stringify(entries));
+    }
+
+    function isLoggedIn() {
+      return localStorage.getItem("grocery_logged_in") === "true";
+    }
+
+    function setLoggedIn(value) {
+      localStorage.setItem("grocery_logged_in", value ? "true" : "false");
+    }
+
+    function escHtml(s) {
+      const d = document.createElement("div");
+      d.textContent = s || "";
+      return d.innerHTML;
+    }
+
+    function showToast(msg, color) {
+      const t = document.createElement("div");
+      t.className = "toast";
+      t.style.background = color;
+      t.textContent = msg;
+      document.getElementById("toast-container").appendChild(t);
+      setTimeout(() => t.remove(), 2500);
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function normalizeProductName(value) {
+      return (value || "").trim().replace(/\s+/g, " ");
+    }
+
+    function findCatalogProduct(value) {
+      const normalized = normalizeProductName(value).toLowerCase();
+      return defaultProducts.find(p => p.fullName.toLowerCase() === normalized || p.displayName.toLowerCase() === normalized) || null;
+    }
+
+    function suggestPackSize(inputId, packSizeId, unitId) {
+      const value = document.getElementById(inputId).value;
+      const found = findCatalogProduct(value);
+      document.getElementById(packSizeId).value = found ? found.packSize : "";
+      if (found && found.packSize) {
+        const unitGuess = found.packSize.split(" ").slice(1).join(" ").trim();
+        if (unitGuess) {
+          const select = document.getElementById(unitId);
+          const exists = [...select.options].some(o => o.value.toLowerCase() === unitGuess.toLowerCase());
+          if (exists) {
+            const matched = [...select.options].find(o => o.value.toLowerCase() === unitGuess.toLowerCase());
+            select.value = matched.value;
+          }
+        }
+      }
+    }
+
+    function populateCatalogSuggestions() {
+      const datalist = document.getElementById("catalog-options");
+      datalist.innerHTML = defaultProducts.map(p => `<option value="${escHtml(p.fullName)}"></option>`).join("");
+    }
+
+    let activePickerTarget = "add";
+
+    function openProductPicker(target) {
+      activePickerTarget = target === "sell" ? "sell" : "add";
+      const searchInput = document.getElementById("product-picker-search");
+      const currentValue = document.getElementById(activePickerTarget + "-product").value.trim();
+      document.getElementById("product-picker-overlay").style.display = "flex";
+      searchInput.value = currentValue;
+      renderProductPicker();
+      setTimeout(() => searchInput.focus(), 50);
+    }
+
+    function closeProductPicker() {
+      document.getElementById("product-picker-overlay").style.display = "none";
+    }
+
+    function renderProductPicker() {
+      const search = document.getElementById("product-picker-search").value.trim().toLowerCase();
+      const list = document.getElementById("product-picker-list");
+      const count = document.getElementById("product-picker-count");
+
+      const filtered = defaultProducts.filter(item => {
+        if (!search) return true;
+        return item.fullName.toLowerCase().includes(search) ||
+          item.displayName.toLowerCase().includes(search) ||
+          item.packSize.toLowerCase().includes(search);
+      }).slice(0, 80);
+
+      count.textContent = search
+        ? `${filtered.length} matching items shown`
+        : `Showing first ${filtered.length} items. Start typing to narrow the list.`;
+
+      if (!filtered.length) {
+        list.innerHTML = `<div class="text-center py-10 text-gray-400">
+          <div class="text-4xl mb-2">📭</div>
+          <p>No matching product found</p>
+        </div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(item => `
+        <button type="button" class="product-picker-item" onclick="selectProductFromPicker('${item.fullName.replace(/'/g, "\'")}')">
+          <div class="font-bold text-gray-800">${escHtml(item.displayName)}</div>
+          <div class="text-sm text-gray-500 mt-1">${escHtml(item.packSize)}</div>
+        </button>
+      `).join("");
+    }
+
+    function selectProductFromPicker(productName) {
+      document.getElementById(activePickerTarget + "-product").value = productName;
+      suggestPackSize(activePickerTarget + "-product", activePickerTarget + "-pack-size", activePickerTarget + "-unit");
+      if (activePickerTarget === "sell") updateSellStockHint();
+      closeProductPicker();
+    }
+
+    function getStockMapFromEntries(entries) {
+      const map = {};
+      entries.forEach(entry => {
+        const key = normalizeProductName(entry.product_name).toLowerCase();
+        if (!key) return;
+        if (!map[key]) {
+          map[key] = {
+            product_name: entry.product_name,
+            unit: entry.unit || "",
+            qty: 0
+          };
+        }
+        if (entry.type === "stock_in") map[key].qty += Number(entry.quantity || 0);
+        if (entry.type === "sold") map[key].qty -= Number(entry.quantity || 0);
+      });
+      return map;
+    }
+
+    function getStockMap() {
+      return getStockMapFromEntries(getEntries());
+    }
+
+    function updateSellStockHint() {
+      const value = document.getElementById("sell-product").value;
+      const hint = document.getElementById("sell-stock-hint");
+      const key = normalizeProductName(value).toLowerCase();
+      const stockMap = getStockMap();
+      if (!key) {
+        hint.textContent = "Choose an item to see available stock.";
+        hint.className = "text-xs text-gray-400 mt-1";
+        return;
+      }
+      const stock = stockMap[key];
+      if (!stock) {
+        hint.textContent = "No stock recorded yet for this item.";
+        hint.className = "text-xs text-red-500 mt-1";
+        return;
+      }
+      hint.textContent = `Available stock: ${stock.qty} ${stock.unit || ""}`;
+      hint.className = stock.qty > 0 ? "text-xs text-green-600 mt-1" : "text-xs text-red-500 mt-1";
+    }
+
+    function showLoginScreen() {
+      document.getElementById("login-screen").style.display = "flex";
+      document.getElementById("credentials-screen").style.display = "none";
+      document.getElementById("main-app").style.display = "none";
+    }
+
+    function showCredentials() {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("credentials-screen").style.display = "flex";
+      document.getElementById("main-app").style.display = "none";
+    }
+
+    function showMain() {
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("credentials-screen").style.display = "none";
+      document.getElementById("main-app").style.display = "block";
+      switchTab("add");
+      populateCatalogSuggestions();
+      renderAll();
+      lucide.createIcons();
+    }
+
+    function logoutUser() {
+      setLoggedIn(false);
+      document.getElementById("login-form").reset();
+      showLoginScreen();
+    }
+
+    document.getElementById("login-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const id = document.getElementById("admin-id").value.trim().toUpperCase();
+      const password = document.getElementById("admin-password").value.trim();
+
+      if (id === ADMIN_ID && password === ADMIN_PASSWORD) {
+        setLoggedIn(true);
+        document.getElementById("login-form").reset();
+        showMain();
+        showToast("✅ Login successful", "#2e7d32");
+      } else {
+        showToast("❌ Wrong admin ID or password", "#dc2626");
+      }
+    });
+
+    document.getElementById("add-product").addEventListener("input", function() {
+      suggestPackSize("add-product", "add-pack-size", "add-unit");
+    });
+
+    document.getElementById("sell-product").addEventListener("input", function() {
+      suggestPackSize("sell-product", "sell-pack-size", "sell-unit");
+      updateSellStockHint();
+    });
+
+    document.getElementById("catalog-search").addEventListener("input", renderCatalog);
+    document.getElementById("catalog-sort").addEventListener("change", renderCatalog);
+
+    document.getElementById("product-picker-search").addEventListener("input", renderProductPicker);
+    document.getElementById("product-picker-overlay").addEventListener("click", function(e) {
+      if (e.target.id === "product-picker-overlay") closeProductPicker();
+    });
+
+    function switchTab(tab) {
+      document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
+      document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+      document.getElementById("tab-" + tab).style.display = "block";
+      document.querySelector(`[data-tab="${tab}"]`).classList.add("active");
+      if (tab === "inventory") renderCatalog();
+      if (tab === "summary") renderSummary();
+      if (tab === "history") renderHistory();
+    }
+
+    document.getElementById("add-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const rawProduct = document.getElementById("add-product").value.trim();
+      const found = findCatalogProduct(rawProduct);
+      const product = found ? found.fullName : rawProduct;
+      const qty = parseInt(document.getElementById("add-qty").value, 10);
+      const unit = document.getElementById("add-unit").value;
+      const note = document.getElementById("add-note").value.trim();
+      const packSize = document.getElementById("add-pack-size").value.trim();
+
+      if (!product || !qty || qty <= 0) {
+        showToast("❌ Enter valid product and quantity", "#dc2626");
+        return;
+      }
+
+      const entries = getEntries();
+      entries.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        type: "stock_in",
+        product_name: product,
+        quantity: qty,
+        unit: unit,
+        pack_size: packSize,
+        note: note,
+        created_at: new Date().toISOString()
+      });
+
+      saveEntries(entries);
+      document.getElementById("add-form").reset();
+      renderAll();
+      showToast("✅ Stock added!", "#2e7d32");
+    });
+
+    document.getElementById("sell-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const rawProduct = document.getElementById("sell-product").value.trim();
+      const found = findCatalogProduct(rawProduct);
+      const product = found ? found.fullName : rawProduct;
+      const qty = parseInt(document.getElementById("sell-qty").value, 10);
+      const unit = document.getElementById("sell-unit").value;
+      const note = document.getElementById("sell-note").value.trim();
+      const packSize = document.getElementById("sell-pack-size").value.trim();
+
+      if (!product || !qty || qty <= 0) {
+        showToast("❌ Enter valid product and quantity", "#dc2626");
+        return;
+      }
+
+      const stockMap = getStockMap();
+      const stockKey = normalizeProductName(product).toLowerCase();
+      const available = stockMap[stockKey] ? stockMap[stockKey].qty : 0;
+
+      if (available < qty) {
+        showToast(`❌ Only ${available} in stock. Cannot sell ${qty}.`, "#dc2626");
+        return;
+      }
+
+      const entries = getEntries();
+      entries.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        type: "sold",
+        product_name: product,
+        quantity: qty,
+        unit: unit,
+        pack_size: packSize,
+        note: note,
+        created_at: new Date().toISOString()
+      });
+
+      saveEntries(entries);
+      document.getElementById("sell-form").reset();
+      updateSellStockHint();
+      renderAll();
+      showToast("🛍️ Sale recorded!", "#e65100");
+    });
+
+    function renderRecentAdds() {
+      const container = document.getElementById("recent-adds");
+      const adds = getEntries()
+        .filter(d => d.type === "stock_in")
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5);
+
+      if (adds.length === 0) {
+        container.innerHTML = "";
+        return;
+      }
+
+      container.innerHTML =
+        '<p class="text-xs font-medium text-gray-400 mb-1">Recent additions</p>' +
+        adds.map(d => `
+          <div class="stock-add rounded-xl p-3">
+            <div class="flex flex-wrap justify-between items-center gap-2">
+              <span class="font-medium text-sm">${escHtml(d.product_name)}</span>
+              <span class="text-green-800 font-bold text-sm">+${d.quantity} ${d.unit}</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">${formatDate(d.created_at)}${d.pack_size ? " · Pack: " + escHtml(d.pack_size) : ""}${d.note ? " · " + escHtml(d.note) : ""}</p>
+          </div>
+        `).join("");
+    }
+
+    function renderRecentSells() {
+      const container = document.getElementById("recent-sells");
+      const sells = getEntries()
+        .filter(d => d.type === "sold")
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5);
+
+      if (sells.length === 0) {
+        container.innerHTML = "";
+        return;
+      }
+
+      container.innerHTML =
+        '<p class="text-xs font-medium text-gray-400 mb-1">Recent sales</p>' +
+        sells.map(d => `
+          <div class="stock-sell rounded-xl p-3">
+            <div class="flex flex-wrap justify-between items-center gap-2">
+              <span class="font-medium text-sm">${escHtml(d.product_name)}</span>
+              <span class="text-orange-800 font-bold text-sm">−${d.quantity} ${d.unit}</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">${formatDate(d.created_at)}${d.pack_size ? " · Pack: " + escHtml(d.pack_size) : ""}${d.note ? " · " + escHtml(d.note) : ""}</p>
+          </div>
+        `).join("");
+    }
+
+    function renderCatalog() {
+      const search = document.getElementById("catalog-search").value.trim().toLowerCase();
+      const sort = document.getElementById("catalog-sort").value;
+      const stockMap = getStockMap();
+
+      let data = defaultProducts.filter(item => item.fullName.toLowerCase().includes(search));
+      data.sort((a, b) => sort === "za" ? b.fullName.localeCompare(a.fullName) : a.fullName.localeCompare(b.fullName));
+
+      document.getElementById("catalog-count").textContent = data.length;
+
+      const container = document.getElementById("catalog-list");
+      container.innerHTML = data.map(item => {
+        const key = normalizeProductName(item.fullName).toLowerCase();
+        const available = stockMap[key] ? stockMap[key].qty : 0;
+        const badge = available > 0
+          ? `<span class="badge bg-green-100 text-green-700">In stock: ${available}</span>`
+          : `<span class="badge bg-gray-100 text-gray-600">No stock yet</span>`;
+
+        return `
+          <div class="bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="font-bold text-sm text-gray-800">${escHtml(item.displayName)}</h3>
+                <p class="text-xs text-gray-500 mt-1">Pack Size: ${escHtml(item.packSize || "-")}</p>
+              </div>
+              ${badge}
+            </div>
+            <div class="mt-3 flex gap-2">
+              <button onclick="quickUseProduct('add', this.dataset.product)" data-product="${escHtml(item.fullName)}" class="btn-primary px-3 py-2 rounded-lg text-xs font-bold">Add</button>
+              <button onclick="quickUseProduct('sell', this.dataset.product)" data-product="${escHtml(item.fullName)}" class="btn-sell px-3 py-2 rounded-lg text-xs font-bold">Sell</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (!data.length) {
+        container.innerHTML = `<div class="col-span-full bg-white rounded-2xl shadow-sm p-10 text-center text-gray-400">
+          <div class="text-4xl mb-2">🔎</div>
+          <p>No matching product found.</p>
+        </div>`;
+      }
+    }
+
+    function quickUseProduct(tab, productName) {
+      switchTab(tab);
+      if (tab === "add") {
+        document.getElementById("add-product").value = productName;
+        suggestPackSize("add-product", "add-pack-size", "add-unit");
+        document.getElementById("add-qty").focus();
+      } else {
+        document.getElementById("sell-product").value = productName;
+        suggestPackSize("sell-product", "sell-pack-size", "sell-unit");
+        updateSellStockHint();
+        document.getElementById("sell-qty").focus();
+      }
+    }
+
+    function renderHistory() {
+      const container = document.getElementById("history-list");
+      const empty = document.getElementById("history-empty");
+
+      let filtered = [...getEntries()];
+      if (currentFilter !== "all") {
+        filtered = filtered.filter(d => d.type === currentFilter);
+      }
+
+      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      if (filtered.length === 0) {
+        container.innerHTML = "";
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+
+      container.innerHTML = filtered.map(d => {
+        const isAdd = d.type === "stock_in";
+        const cls = isAdd ? "stock-add" : "stock-sell";
+        const icon = isAdd ? "📦" : "🛍️";
+        const sign = isAdd ? "+" : "−";
+        const clr = isAdd ? "text-green-800" : "text-orange-800";
+
+        if (deleteConfirmId === d.id) {
+          return `
+            <div class="bg-red-50 border-2 border-red-200 rounded-xl p-3">
+              <p class="text-sm font-medium text-red-700 mb-2">Delete "${escHtml(d.product_name)}"?</p>
+              <div class="flex gap-2">
+                <button onclick="confirmDelete('${d.id}')" class="bg-red-600 text-white text-xs px-4 py-2 rounded-lg font-medium">Yes, Delete</button>
+                <button onclick="cancelDelete()" class="bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-medium">Cancel</button>
+              </div>
+            </div>
+          `;
+        }
+
+        if (editEntryId === d.id) {
+          return `
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+              <p class="text-sm font-bold text-blue-800 mb-3">✏️ Edit entry</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Product</label>
+                  <input type="text" id="edit-product-${d.id}" value="${escHtml(d.product_name)}" list="product-suggestions" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
+                  <input type="number" id="edit-qty-${d.id}" value="${d.quantity}" min="1" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Unit</label>
+                  <select id="edit-unit-${d.id}">
+                    ${unitOptionsHtml(d.unit || "pieces")}
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-gray-700 mb-1">Pack Size</label>
+                  <input type="text" id="edit-pack-${d.id}" value="${escHtml(d.pack_size || "")}" />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Note</label>
+                <input type="text" id="edit-note-${d.id}" value="${escHtml(d.note || "")}" />
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="saveEdit('${d.id}')" class="bg-blue-600 text-white text-xs px-4 py-2 rounded-lg font-medium">Save</button>
+                <button onclick="cancelEdit()" class="bg-gray-200 text-gray-700 text-xs px-4 py-2 rounded-lg font-medium">Cancel</button>
+              </div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="${cls} rounded-xl p-3">
+            <div class="flex justify-between items-start gap-3">
+              <div class="flex-1">
+                <span class="font-medium text-sm">${icon} ${escHtml(d.product_name)}</span>
+                <span class="${clr} font-bold text-sm ml-2">${sign}${d.quantity} ${d.unit}</span>
+                <p class="text-xs text-gray-500 mt-0.5">${formatDate(d.created_at)}${d.pack_size ? " · Pack: " + escHtml(d.pack_size) : ""}${d.note ? " · " + escHtml(d.note) : ""}</p>
+              </div>
+              <div class="flex items-center gap-1 ml-2 mt-0.5">
+                <button onclick="requestEdit('${d.id}')" class="text-gray-400 hover:text-blue-500 transition" title="Edit">
+                  <i data-lucide="pencil" style="width:16px;height:16px;"></i>
+                </button>
+                <button onclick="requestDelete('${d.id}')" class="text-gray-400 hover:text-red-500 transition" title="Delete">
+                  <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      lucide.createIcons();
+    }
+
+    function unitOptionsHtml(selected) {
+      const units = ["pieces", "kg", "bags", "boxes", "bottles", "liters", "cans", "packages", "dozen", "lb", "g", "ml", "L", "oz", "pack", "tub"];
+      return units.map(unit => `<option value="${unit}" ${selected === unit ? "selected" : ""}>${unit}</option>`).join("");
+    }
+
+    function requestEdit(id) {
+      deleteConfirmId = null;
+      editEntryId = id;
+      renderHistory();
+    }
+
+    function cancelEdit() {
+      editEntryId = null;
+      renderHistory();
+    }
+
+    function requestDelete(id) {
+      editEntryId = null;
+      deleteConfirmId = id;
+      renderHistory();
+    }
+
+    function cancelDelete() {
+      deleteConfirmId = null;
+      renderHistory();
+    }
+
+    function saveEdit(id) {
+      const entries = getEntries();
+      const index = entries.findIndex(item => item.id === id);
+      if (index === -1) {
+        showToast("❌ Entry not found", "#dc2626");
+        return;
+      }
+
+      const original = entries[index];
+      const rawProduct = document.getElementById(`edit-product-${id}`).value.trim();
+      const found = findCatalogProduct(rawProduct);
+      const product = found ? found.fullName : rawProduct;
+      const qty = parseInt(document.getElementById(`edit-qty-${id}`).value, 10);
+      const unit = document.getElementById(`edit-unit-${id}`).value;
+      const packSize = document.getElementById(`edit-pack-${id}`).value.trim();
+      const note = document.getElementById(`edit-note-${id}`).value.trim();
+
+      if (!product || !qty || qty <= 0) {
+        showToast("❌ Enter valid product and quantity", "#dc2626");
+        return;
+      }
+
+      if (original.type === "sold") {
+        const otherEntries = entries.filter(item => item.id !== id);
+        const stockMap = getStockMapFromEntries(otherEntries);
+        const stockKey = normalizeProductName(product).toLowerCase();
+        const available = stockMap[stockKey] ? stockMap[stockKey].qty : 0;
+        if (available < qty) {
+          showToast(`❌ Only ${available} in stock for edited sale.`, "#dc2626");
+          return;
+        }
+      }
+
+      entries[index] = {
+        ...original,
+        product_name: product,
+        quantity: qty,
+        unit: unit,
+        pack_size: packSize,
+        note: note
+      };
+
+      saveEntries(entries);
+      editEntryId = null;
+      renderAll();
+      showToast("✅ Entry updated", "#2563eb");
+    }
+
+    function confirmDelete(id) {
+      const entries = getEntries().filter(item => item.id !== id);
+      saveEntries(entries);
+      deleteConfirmId = null;
+      renderAll();
+      showToast("🗑️ Entry deleted", "#6b7280");
+    }
+
+    function filterHistory(f) {
+      currentFilter = f;
+      document.querySelectorAll(".filter-btn").forEach(btn => {
+        if (btn.dataset.filter === f) {
+          btn.className = "filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-800 text-white font-medium";
+        } else {
+          btn.className = "filter-btn text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 font-medium";
+        }
+      });
+      renderHistory();
+    }
+
+    function renderSummary() {
+      const entries = getEntries();
+      let totalAdded = 0;
+      let totalSold = 0;
+      const products = {};
+
+      entries.forEach(d => {
+        const key = normalizeProductName(d.product_name).toLowerCase();
+        if (!key) return;
+
+        if (!products[key]) {
+          products[key] = {
+            name: d.product_name,
+            added: 0,
+            sold: 0,
+            unit: d.unit || "",
+            packSize: d.pack_size || ""
+          };
+        }
+
+        if (d.type === "stock_in") {
+          products[key].added += Number(d.quantity || 0);
+          totalAdded += Number(d.quantity || 0);
+        } else {
+          products[key].sold += Number(d.quantity || 0);
+          totalSold += Number(d.quantity || 0);
+        }
+      });
+
+      document.getElementById("total-added").textContent = totalAdded;
+      document.getElementById("total-sold").textContent = totalSold;
+      document.getElementById("total-net").textContent = totalAdded - totalSold;
+
+      const breakdown = document.getElementById("product-breakdown");
+      const empty = document.getElementById("breakdown-empty");
+      const keys = Object.keys(products);
+
+      if (keys.length === 0) {
+        breakdown.innerHTML = "";
+        empty.style.display = "block";
+        return;
+      }
+
+      empty.style.display = "none";
+
+      breakdown.innerHTML = keys.sort((a, b) => products[a].name.localeCompare(products[b].name)).map(k => {
+        const p = products[k];
+        const net = p.added - p.sold;
+        const netCls =
+          net > 0 ? "text-green-700 bg-green-50 border-l-4 border-green-500" :
+          net < 0 ? "text-red-700 bg-red-50 border-l-4 border-red-500" :
+          "text-gray-600 bg-gray-50 border-l-4 border-gray-300";
+
+        const stockStatus =
+          net > 0 ? "✅ In Stock" :
+          net < 0 ? "⚠️ Over Sold" :
+          "⚪ Out of Stock";
+
+        return `
+          <div class="bg-white rounded-xl p-4 shadow-sm ${netCls}">
+            <div class="flex justify-between items-start mb-3 gap-4">
+              <div class="flex-1">
+                <span class="font-bold text-base block mb-0.5">${escHtml(p.name)}</span>
+                <span class="text-xs font-medium opacity-70">${escHtml(p.unit || "-")}${p.packSize ? " · Pack: " + escHtml(p.packSize) : ""}</span>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold">${net >= 0 ? "+" : ""}${net}</div>
+                <div class="text-xs font-bold mt-0.5">${stockStatus}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 text-xs mt-3 pt-3 border-t border-current border-opacity-20">
+              <div class="text-center">
+                <span class="text-2xl block mb-1">📦</span>
+                <div class="font-bold text-green-700 text-base">${p.added}</div>
+                <div class="opacity-70 text-xs">Added</div>
+              </div>
+              <div class="text-center">
+                <span class="text-2xl block mb-1">🛍️</span>
+                <div class="font-bold text-orange-700 text-base">${p.sold}</div>
+                <div class="opacity-70 text-xs">Sold</div>
+              </div>
+              <div class="text-center">
+                <span class="text-2xl block mb-1">📊</span>
+                <div class="font-bold text-base">${net}</div>
+                <div class="opacity-70 text-xs">Left</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderAll() {
+      renderRecentAdds();
+      renderRecentSells();
+      renderHistory();
+      renderSummary();
+      renderCatalog();
+      updateSellStockHint();
+      lucide.createIcons();
+    }
+
+    window.onload = function() {
+      populateCatalogSuggestions();
+      if (isLoggedIn()) {
+        showMain();
+      } else {
+        showLoginScreen();
+      }
+      lucide.createIcons();
+    };
+  </script>
+</body>
+=======
 <!doctype html>
 <html lang="en">
 <head>
@@ -714,4 +1921,5 @@
     };
   </script>
 </body>
+>>>>>>> a3cdcd005f948d8f56d73fb0818699d7c7c324cb
 </html>
