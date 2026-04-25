@@ -143,6 +143,12 @@
       white-space: nowrap;
     }
 
+
+    .btn-danger { background: #dc2626; color: white; transition: 0.2s; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-muted { background: #e5e7eb; color: #374151; transition: 0.2s; }
+    .btn-muted:hover { background: #d1d5db; }
+
   </style>
 </head>
 <body>
@@ -349,9 +355,28 @@
           <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div>
               <h2 class="heading-font text-xl mb-1" style="color:#1565c0;">🏷️ Full Product Catalog</h2>
-              <p class="text-gray-400 text-sm">All items imported from your inventory.</p>
+              <p class="text-gray-400 text-sm">Manage your product list. Add new products, edit mistakes, or remove old products.</p>
             </div>
-            <span class="badge bg-blue-100 text-blue-800"><span id="catalog-count">308</span> items</span>
+            <span class="badge bg-blue-100 text-blue-800"><span id="catalog-count">0</span> items</span>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-4">
+            <h3 class="font-bold text-blue-900 mb-3">➕ Add / Update Product</h3>
+            <form id="catalog-form" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+              <div class="md:col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Product Name</label>
+                <input type="text" id="catalog-product-name" placeholder="e.g. New Product Name" required />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Pack Size</label>
+                <input type="text" id="catalog-product-pack" placeholder="e.g. 500 g / 1 L / 10 kg" />
+              </div>
+              <div class="flex items-end gap-2">
+                <button type="submit" id="catalog-save-btn" class="btn-info w-full py-3 rounded-xl font-bold text-sm">Add</button>
+                <button type="button" id="catalog-cancel-btn" onclick="cancelCatalogEdit()" class="btn-muted px-3 py-3 rounded-xl font-bold text-sm" style="display:none;">Cancel</button>
+              </div>
+            </form>
+            <p class="text-xs text-blue-700 mt-2">After adding here, the product will appear in Add Stock, Sell search, and Catalog.</p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -408,7 +433,7 @@
 
           <div class="summary-catalog rounded-2xl p-5 text-white">
             <p class="text-violet-100 text-xs font-medium mb-1">🏷️ Catalog Items</p>
-            <p class="text-3xl font-bold">308</p>
+            <p class="text-3xl font-bold" id="summary-catalog-count">0</p>
           </div>
         </div>
 
@@ -460,9 +485,54 @@
       };
     });
 
+    const CATALOG_STORAGE_KEY = "grocery_catalog_products";
+
+    function getCatalogProducts() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CATALOG_STORAGE_KEY) || "null");
+        if (Array.isArray(saved) && saved.length) return saved;
+      } catch {}
+      return defaultProducts;
+    }
+
+    function saveCatalogProducts(products) {
+      const cleaned = products
+        .filter(p => p && normalizeProductName(p.fullName))
+        .map((p, index) => {
+          const fullName = normalizeProductName(p.fullName);
+          const parts = fullName.split(" - ");
+          const packSize = normalizeProductName(p.packSize || (parts.length > 1 ? parts[parts.length - 1] : ""));
+          const displayName = normalizeProductName(p.displayName || (parts.length > 1 ? parts.slice(0, -1).join(" - ") : fullName));
+          return {
+            id: p.id || String(Date.now() + index),
+            fullName,
+            displayName,
+            packSize
+          };
+        });
+      localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(cleaned));
+    }
+
+    function buildCatalogProduct(name, packSize, existingId) {
+      const cleanName = normalizeProductName(name);
+      const cleanPack = normalizeProductName(packSize);
+      const fullName = cleanPack ? `${cleanName} - ${cleanPack}` : cleanName;
+      return {
+        id: existingId || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())),
+        fullName,
+        displayName: cleanName,
+        packSize: cleanPack
+      };
+    }
+
+    function getCatalogCount() {
+      return getCatalogProducts().length;
+    }
+
     let currentFilter = "all";
     let deleteConfirmId = null;
     let editEntryId = null;
+    let catalogEditId = null;
 
     function getEntries() {
       try {
@@ -516,7 +586,7 @@
 
     function findCatalogProduct(value) {
       const normalized = normalizeProductName(value).toLowerCase();
-      return defaultProducts.find(p => p.fullName.toLowerCase() === normalized || p.displayName.toLowerCase() === normalized) || null;
+      return getCatalogProducts().find(p => p.fullName.toLowerCase() === normalized || p.displayName.toLowerCase() === normalized) || null;
     }
 
     function suggestPackSize(inputId, packSizeId, unitId) {
@@ -538,7 +608,7 @@
 
     function populateCatalogSuggestions() {
       const datalist = document.getElementById("catalog-options");
-      datalist.innerHTML = defaultProducts.map(p => `<option value="${escHtml(p.fullName)}"></option>`).join("");
+      datalist.innerHTML = getCatalogProducts().map(p => `<option value="${escHtml(p.fullName)}"></option>`).join("");
     }
 
     let activePickerTarget = "add";
@@ -562,7 +632,7 @@
       const list = document.getElementById("product-picker-list");
       const count = document.getElementById("product-picker-count");
 
-      const filtered = defaultProducts.filter(item => {
+      const filtered = getCatalogProducts().filter(item => {
         if (!search) return true;
         return item.fullName.toLowerCase().includes(search) ||
           item.displayName.toLowerCase().includes(search) ||
@@ -692,6 +762,7 @@
 
     document.getElementById("catalog-search").addEventListener("input", renderCatalog);
     document.getElementById("catalog-sort").addEventListener("change", renderCatalog);
+    document.getElementById("catalog-form").addEventListener("submit", saveCatalogProduct);
 
     document.getElementById("product-picker-search").addEventListener("input", renderProductPicker);
     document.getElementById("product-picker-overlay").addEventListener("click", function(e) {
@@ -841,7 +912,7 @@
       const sort = document.getElementById("catalog-sort").value;
       const stockMap = getStockMap();
 
-      let data = defaultProducts.filter(item => item.fullName.toLowerCase().includes(search));
+      let data = getCatalogProducts().filter(item => item.fullName.toLowerCase().includes(search));
       data.sort((a, b) => sort === "za" ? b.fullName.localeCompare(a.fullName) : a.fullName.localeCompare(b.fullName));
 
       document.getElementById("catalog-count").textContent = data.length;
@@ -863,9 +934,11 @@
               </div>
               ${badge}
             </div>
-            <div class="mt-3 flex gap-2">
-              <button onclick="quickUseProduct('add', this.dataset.product)" data-product="${escHtml(item.fullName)}" class="btn-primary px-3 py-2 rounded-lg text-xs font-bold">Add</button>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button onclick="quickUseProduct('add', this.dataset.product)" data-product="${escHtml(item.fullName)}" class="btn-primary px-3 py-2 rounded-lg text-xs font-bold">Add Stock</button>
               <button onclick="quickUseProduct('sell', this.dataset.product)" data-product="${escHtml(item.fullName)}" class="btn-sell px-3 py-2 rounded-lg text-xs font-bold">Sell</button>
+              <button onclick="startCatalogEdit(this.dataset.id)" data-id="${escHtml(String(item.id))}" class="btn-info px-3 py-2 rounded-lg text-xs font-bold">Edit</button>
+              <button onclick="deleteCatalogProduct(this.dataset.id)" data-id="${escHtml(String(item.id))}" class="btn-danger px-3 py-2 rounded-lg text-xs font-bold">Remove</button>
             </div>
           </div>
         `;
@@ -877,6 +950,84 @@
           <p>No matching product found.</p>
         </div>`;
       }
+    }
+
+
+    function saveCatalogProduct(e) {
+      e.preventDefault();
+      const name = document.getElementById("catalog-product-name").value.trim();
+      const pack = document.getElementById("catalog-product-pack").value.trim();
+
+      if (!name) {
+        showToast("❌ Enter product name", "#dc2626");
+        return;
+      }
+
+      const products = getCatalogProducts();
+      const newProduct = buildCatalogProduct(name, pack, catalogEditId);
+      const duplicate = products.find(p => p.fullName.toLowerCase() === newProduct.fullName.toLowerCase() && String(p.id) !== String(catalogEditId));
+
+      if (duplicate) {
+        showToast("❌ This product already exists", "#dc2626");
+        return;
+      }
+
+      if (catalogEditId) {
+        const index = products.findIndex(p => String(p.id) === String(catalogEditId));
+        if (index === -1) {
+          showToast("❌ Product not found", "#dc2626");
+          return;
+        }
+        products[index] = newProduct;
+        showToast("✅ Product updated", "#2563eb");
+      } else {
+        products.push(newProduct);
+        showToast("✅ New product added", "#2e7d32");
+      }
+
+      saveCatalogProducts(products);
+      cancelCatalogEdit(false);
+      populateCatalogSuggestions();
+      renderAll();
+    }
+
+    function startCatalogEdit(id) {
+      const item = getCatalogProducts().find(p => String(p.id) === String(id));
+      if (!item) return;
+      catalogEditId = String(id);
+      document.getElementById("catalog-product-name").value = item.displayName;
+      document.getElementById("catalog-product-pack").value = item.packSize || "";
+      document.getElementById("catalog-save-btn").textContent = "Update";
+      document.getElementById("catalog-cancel-btn").style.display = "inline-block";
+      document.getElementById("catalog-product-name").focus();
+    }
+
+    function cancelCatalogEdit(showMessage = true) {
+      catalogEditId = null;
+      document.getElementById("catalog-form").reset();
+      document.getElementById("catalog-save-btn").textContent = "Add";
+      document.getElementById("catalog-cancel-btn").style.display = "none";
+      if (showMessage) showToast("Edit cancelled", "#6b7280");
+    }
+
+    function deleteCatalogProduct(id) {
+      const products = getCatalogProducts();
+      const item = products.find(p => String(p.id) === String(id));
+      if (!item) return;
+
+      const usedInEntries = getEntries().some(entry => normalizeProductName(entry.product_name).toLowerCase() === item.fullName.toLowerCase());
+      if (usedInEntries) {
+        const ok = confirm("This product has stock/sale history. Remove from catalog only? Old history will stay saved.");
+        if (!ok) return;
+      } else {
+        const ok = confirm(`Remove ${item.fullName} from catalog?`);
+        if (!ok) return;
+      }
+
+      saveCatalogProducts(products.filter(p => String(p.id) !== String(id)));
+      populateCatalogSuggestions();
+      renderAll();
+      showToast("🗑️ Product removed from catalog", "#6b7280");
     }
 
     function quickUseProduct(tab, productName) {
@@ -1118,6 +1269,7 @@
       document.getElementById("total-added").textContent = totalAdded;
       document.getElementById("total-sold").textContent = totalSold;
       document.getElementById("total-net").textContent = totalAdded - totalSold;
+      document.getElementById("summary-catalog-count").textContent = getCatalogCount();
 
       const breakdown = document.getElementById("product-breakdown");
       const empty = document.getElementById("breakdown-empty");
